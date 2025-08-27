@@ -1,6 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from flask import Flask, request, jsonify, send_file, render_template_string
+from dotenv import load_dotenv
+load_dotenv()
 from openai import OpenAI
 import os
+
+# Charger le fichier apikey.env
+load_dotenv("apikey.env")
 
 # Pour PDF avec mise en page
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer

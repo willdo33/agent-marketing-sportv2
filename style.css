@@ -1,0 +1,112 @@
+/* Charger la police Sugo Display si tu as le fichier */
+@font-face {
+  font-family: 'Sugo Display';
+  src: url('../static/fonts/SugoDisplay-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Sugo Display', sans-serif;
+  background: linear-gradient(to bottom, #001f3f, #003366, #004080);
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-attachment: fixed;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Effet de vague en fond */
+body::before {
+  content: "";
+  position: absolute;
+  top: -100px;
+  left: 0;
+  width: 200%;
+  height: 300px;
+  background: rgba(255, 0, 0, 0.4);
+  border-radius: 100% 50%;
+  animation: wave 6s infinite linear;
+  z-index: 0;
+}
+
+@keyframes wave {
+  0% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-25%) translateY(15px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+.container {
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 30px;
+  border-radius: 20px;
+  max-width: 800px;
+  margin: 60px auto;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+}
+
+h2 {
+  color: #ff2e2e;
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+p {
+  text-align: center;
+  color: #ddd;
+  margin-bottom: 20px;
+}
+
+textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: none;
+  padding: 15px;
+  font-size: 1rem;
+  font-family: 'Sugo Display', sans-serif;
+  margin-bottom: 20px;
+  background: #f9f9f9;
+  color: #222;
+}
+
+button {
+  display: inline-block;
+  background: #ff2e2e;
+  border: none;
+  padding: 14px 25px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  color: #fff;
+  font-family: 'Sugo Display', sans-serif;
+  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
+}
+
+button:hover {
+  background: #ff4747;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6);
+}
+
+#output {
+  background: rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 20px;
+  white-space: pre-wrap;
+  color: #eee;
+  font-size: 1rem;
+  line-height: 1.5;
+}
