@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>WILL.ia</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=7">
+</head>
+<body>
+<a href="https://ton-lien.com" class="logo">
+  <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Will.ia">
+</a>
+
+<div class="logos-bottom">
+  <a href="https://www.linkedin.com/in/willdorignac/" target="_blank">
+    <img src="{{ url_for('static', filename='logo1.png') }}" alt="Logo 1">
+  </a>
+  <a href="https://www.instagram.com/will_dorignac/" target="_blank">
+    <img src="{{ url_for('static', filename='logo2.png') }}" alt="Logo 2">
+  </a>
+  <a href="{{ url_for('static', filename='CV Will Dorignac.pdf') }}" download>
+    <img src="{{ url_for('static', filename='cv.png') }}" alt="Télécharger mon CV">
+  </a>
+</div>
+
+  <div class="container">
+    <h2>WILL.ia</h2>
+    <p>BONJOUR. JE SUIS PROGRAMMÉ POUR TE PROPOSER DES ACTIVATIONS MARKETING & COMMUNICATION</p>
+
+    <form id="agent-form">
+      <textarea id="prompt" name="prompt" placeholder="DONNE MOI DES DÉTAILS : marque, budget, période,..."></textarea>
+      <button type="submit">Activer WILL.ia 🤖​</button>
+    </form>
+
+<div id="output" style="display:none;"></div>
+
+<!-- Loader Will.ia -->
+<div id="loader" style="display:none; text-align:center; margin-top:20px;">
+  <div class="hourglass"></div>
+  <p>Génération en cours. Encore quelques instants...</p>
+</div>
+
+<button id="download-btn" style="display:none;">📄 Télécharger en PDF </button>
+
+<script>
+document.getElementById("agent-form").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const prompt = document.getElementById("prompt").value.trim();
+
+  if (!prompt) {
+    document.getElementById("output").style.display = "block";
+    document.getElementById("output").innerText = "Tu ne m'as donné aucune indication 😅";
+    return;
+  }
+
+  // Affiche le loader + masque le texte précédent
+  document.getElementById("loader").style.display = "block";
+  document.getElementById("output").style.display = "none";
+
+  try {
+    const response = await fetch("/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+
+    const data = await response.json();
+
+    // Cache le loader et affiche le résultat
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("output").style.display = "block";
+
+    if (data.propositions) {
+      document.getElementById("output").innerText = data.propositions;
+      document.getElementById("download-btn").style.display = "block";
+    } else {
+      document.getElementById("output").innerText = "❌ Erreur : " + (data.error || "Réponse vide");
+    }
+
+  } catch (err) {
+    console.error("Erreur JS :", err);
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("output").style.display = "block";
+    document.getElementById("output").innerText = "⚠️ Impossible de contacter le serveur.";
+  }
+});
+
+    // Bouton PDF
+    document.getElementById("download-btn").addEventListener("click", async function() {
+      const content = document.getElementById("output").innerText;
+
+      const response = await fetch("/download_pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content })
+      });
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Propositions_WillIA.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+
+  </script>
+</body>
+</html>

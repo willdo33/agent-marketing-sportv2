@@ -1,108 +1,146 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
-from flask import Flask, request, jsonify, send_file, render_template_string
-from dotenv import load_dotenv
-load_dotenv()
-from openai import OpenAI
 import os
-
-# Charger le fichier apikey.env
-load_dotenv("apikey.env")
-
-# Pour PDF avec mise en page
+from flask import Flask, request, jsonify, render_template, send_file
+from dotenv import load_dotenv
+from openai import OpenAI
+from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.pagesizes import letter
+import io
+
+# Charger .env ou apikey.env
+load_dotenv("apikey.env")
+
+# Initialiser le client OpenAI
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = Flask(__name__)
 
-# 🔑 Initialise OpenAI avec ta clé d’environnement
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-# === Page principale ===
+# ------------------------------
+# PAGE D’ACCUEIL
+# ------------------------------
 @app.route("/")
 def index():
-    return render_template_string(open("index.html").read())
+    print("👉 index.html rendu")
+    return render_template("index.html")
 
-# === Génération des propositions via OpenAI ===
+# ------------------------------
+# GÉNÉRATION DES PROPOSITIONS
+# ------------------------------
 @app.route("/generate", methods=["POST"])
 def generate():
-    data = request.json
-    brief = data.get("brief", "")
-
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",  # rapide et optimisé
-            messages=[
-                {"role": "system", "content": (
-                    "Tu es un expert en marketing sportif. "
-                    "Propose 3 à 5 activations marketing CONCRÈTES et adaptées au marché : "
-                    "1) description, 2) influenceurs sportifs pertinents (avec plateforme), "
-                    "3) statistiques ou tendances (TikTok, Instagram, YouTube), "
-                    "4) estimation simple de KPIs. "
-                    "Présente les résultats avec des titres et listes claires."
-                )},
-                {"role": "user", "content": brief}
-            ],
-            max_tokens=700,
-            temperature=0.7
+        data = request.get_json()
+        prompt = data.get("prompt", "")
+
+        if not prompt:
+            return jsonify({"error": "Prompt manquant"}), 400
+
+        # CONTEXTE SYSTEM
+                # ✅ Prompt enrichi
+        system_prompt = (
+            "Tu t'appelles Will.ia etTu es un expert en marketing et communication spécialisé dans le sport. Tu as 10 ans d'expérience. Tu as travaillé pour Take off, EA Sports, Classico sport, Elwing Boards et Sportall."
+            "Ta mission est de proposer des activations marketing et communication CONCRÈTES et DÉTAILLÉES. "
+            "Structure toujours tes réponses ainsi :\n\n"
+            " 💻  *ACTIVATION* (titre en majuscules et italique)\n"
+
+            "   → Décris le concept clairement.\n\n"
+
+            " 🤳  *INFLUENCEURS / ATHLÈTES PERTINENTS* (titre en majuscules et italique)\n"
+
+            "   → Donne au moins 3 exemples réalistes et cohérents avec la cible. Indiquer les chiffres clés de leur notoriété sur les réseaux sociaux.\n\n"
+
+            " 📶  *IMPACT DE LA CAMPAGNE* (titre en majuscules et italique) \n"
+
+            "   → Instagram (moyenne likes, engagement %)\n"
+            "   → TikTok (moyenne vues, taux de partage)\n"
+            "   → YouTube (moyenne vues, durée de visionnage)\n"
+            "   → Spotify (streams moyens, abonnés mensuels)\n"
+            "   → Twitch (moyenne viewers en live, abonnés)\n\n"
+            "   → Résultat global de l'activation (chiffres clés)\n\n"
+
+            " 💶  *ESTIMATION DU COÛT* (titre en majuscules et italique)\n"
+
+            "   → Estime le coût avec les tendances du marché\n"
+            "Évite tout langage trop vague. Donne des chiffres basés sur les benchmarks récents. "
+            "Ne mets pas de # ou de markdown, le texte doit être propre et lisible."
         )
 
-        proposals = response.choices[0].message.content.strip()
 
-        # Sauvegarde pour PDF
-        with open("last_output.txt", "w", encoding="utf-8") as f:
-            f.write(proposals)
+        # Appel à OpenAI
+        completion = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ]
+        )
 
-        return jsonify({"proposals": proposals})
+        result = completion.choices[0].message.content
+
+        # Stocker résultat en session (ou en variable globale pour PDF)
+        request.environ['last_result'] = result  
+
+        return jsonify({"propositions": result})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# === Génération PDF avec mise en page ===
-@app.route("/download_pdf", methods=["GET"])
+# ------------------------------
+# GÉNÉRATION DU PDF
+# ------------------------------
+@app.route("/download_pdf", methods=["POST"])
 def download_pdf():
-    if not os.path.exists("last_output.txt"):
-        return jsonify({"error": "Aucune proposition à exporter"}), 400
+    try:
+        data = request.get_json()
+        content = data.get("content", "")
 
-    with open("last_output.txt", "r", encoding="utf-8") as f:
-        proposals = f.read()
+        if not content:
+            return jsonify({"error": "Pas de contenu à exporter"}), 400
 
-    pdf_path = "propositions.pdf"
-    doc = SimpleDocTemplate(pdf_path, pagesize=letter,
-                            rightMargin=50, leftMargin=50,
-                            topMargin=50, bottomMargin=50)
+        # Création PDF
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
 
-    styles = getSampleStyleSheet()
-    story = []
+        # Titre
+        story.append(Paragraph("<b>Propositions Marketing Sport</b>", styles["Title"]))
+        story.append(Spacer(1, 20))
 
-    # Titre principal
-    story.append(Paragraph("Propositions d'activations", styles["Title"]))
-    story.append(Spacer(1, 20))
+        # Contenu
+        for line in content.split("\n"):
+            if line.strip():
+                if line[0].isdigit() and "." in line[:3]:  # sous-titres numérotés
+                    story.append(Paragraph(f"<b>{line}</b>", styles["Heading3"]))
+                else:
+                    story.append(Paragraph(line, styles["Normal"]))
+                story.append(Spacer(1, 10))
 
-    # Mise en forme du contenu
-    for line in proposals.split("\n"):
-        if line.strip() == "":
-            story.append(Spacer(1, 10))
-        elif line.startswith("###"):  # titres niveau 3
-            story.append(Paragraph(line.replace("###", "").strip(), styles["Heading3"]))
-            story.append(Spacer(1, 6))
-        elif line.startswith("**"):  # gras
-            story.append(Paragraph(f"<b>{line.replace('**','')}</b>", styles["Normal"]))
-        else:  # texte normal
-            story.append(Paragraph(line.strip(), styles["Normal"]))
-            story.append(Spacer(1, 6))
+        # Mention légale
+        story.append(Spacer(1, 30))
+        story.append(Paragraph(
+            "Will Dorignac - Expert en marketing et communication - Tous droits réservés. Mail : wdorignac@gmail.com - Téléphone : 0601401791",
+        
+            styles["Italic"]
+        ))
 
-    # Mention légale en fin de document
-    story.append(Spacer(1, 30))
-    story.append(Paragraph(
-        "Will Dorignac - Expert en marketing et communication Sport - Tous droits réservés.",
-        styles["Italic"]
-    ))
+        doc.build(story)
+        buffer.seek(0)
 
-    doc.build(story)
-    return send_file(pdf_path, as_attachment=True)
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name="propositions.pdf",
+            mimetype="application/pdf"
+        )
 
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ------------------------------
+# LANCEMENT APP
+# ------------------------------
 if __name__ == "__main__":
     app.run(debug=True)
