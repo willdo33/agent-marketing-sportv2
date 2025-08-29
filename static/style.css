@@ -168,11 +168,19 @@ p {
     #form-container {
         margin-top: 140px;   /* descend le cadre */
         width: 95%;          /* plus large */
+        margin-left: auto;   
+        margin-right: auto;   
     }
 
     #brief {
         height: 150px;       /* zone de texte plus grande */
         font-size: 1.1rem;
+    }
+
+    #logo {
+        width: 45px;       
+        top: 15px;       /* zone de texte plus grande */
+        left: 15px;       /* zone de texte plus grande */
     }
 
     #generate-btn {
