@@ -161,3 +161,23 @@ p {
   background: #ff1c1c;
   transform: scale(1.05);
 }
+
+
+/* ----- Responsive (mobile) ----- */
+@media (max-width: 768px) {
+    #form-container {
+        margin-top: 140px;   /* descend le cadre */
+        width: 95%;          /* plus large */
+    }
+
+    #brief {
+        height: 150px;       /* zone de texte plus grande */
+        font-size: 1.1rem;
+    }
+
+    #generate-btn {
+        font-size: 1.2rem;   /* texte plus gros */
+        padding: 18px 30px;  /* bouton plus haut et plus large */
+        width: 100%;         /* prend toute la largeur */
+    }
+}
