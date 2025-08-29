@@ -166,10 +166,14 @@ p {
 /* ----- Responsive (mobile) ----- */
 @media (max-width: 768px) {
     #form-container {
-        margin-top: 140px;   /* descend le cadre */
-        width: 95%;          /* plus large */
-        margin-left: auto;   
-        margin-right: auto;   
+        margin-top: 160px; /* descend un peu plus */
+        width: 95%;        /* prend quasi toute la largeur */
+    }
+
+    #logo {
+        width: 45px;       /* logo plus petit sur mobile */
+        top: 15px;
+        left: 15px;
     }
 
     #brief {
@@ -177,15 +181,32 @@ p {
         font-size: 1.1rem;
     }
 
-    #logo {
-        width: 45px;       
-        top: 15px;       /* zone de texte plus grande */
-        left: 15px;       /* zone de texte plus grande */
-    }
-
     #generate-btn {
         font-size: 1.2rem;   /* texte plus gros */
         padding: 18px 30px;  /* bouton plus haut et plus large */
         width: 100%;         /* prend toute la largeur */
     }
+
+/* -------- Cadre principal -------- */
+#form-container {
+    margin-top: 120px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 700px;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;   /* ✅ assure le centrage horizontal */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* -------- Logo fixe en haut à gauche -------- */
+#logo {
+    position: fixed;     /* ✅ le logo reste en place même au scroll */
+    top: 20px;
+    left: 20px;
+    width: 60px;
+    height: auto;
+    z-index: 1000;       /* reste au-dessus du reste */
+
 }
