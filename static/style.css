@@ -4,6 +4,9 @@
 body {
   margin: 0;
   padding: 0;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-x: hidden;
   font-family: "Satoshi", sans-serif;
   background: url("background.jpg") no-repeat center center fixed;
   background-size: cover;
@@ -175,7 +178,7 @@ p {
     }
 
     #logo {
-        width: 45px;       /* logo plus petit sur mobile */
+        width: 20px;       /* logo plus petit sur mobile */
         top: 15px;
         left: 15px;
     }
