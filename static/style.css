@@ -112,7 +112,7 @@ p {
 /* Logo principal en haut à gauche */
 .logo {
   position: fixed;   /* fixé en haut à gauche */
-  top: 20px;
+  top: 10px;
   left: 20px;
   z-index: 30;       /* priorité au-dessus du reste */
 }
@@ -177,7 +177,7 @@ p {
         padding: 15px;
     }
 
-    #logo {
+    .logo img{
         width: 20px;       /* logo plus petit sur mobile */
         top: 15px;
         left: 15px;
@@ -196,6 +196,7 @@ p {
 
     textarea {
         height: 100px;
+    }
 
     button {
         width: 100%; /* bouton plus large */
